@@ -1,10 +1,11 @@
 import { Inngest, NonRetriableError } from "inngest";
-import { User } from "../../models/user.js";
-import { sendEmail } from "../../utils/mailer";
+import  User  from "../../models/user.js";
+import { sendEmail } from "../../utils/mailer.js";
 import Ticket from "../../models/ticket.js";
 import analyseTicket from "../../utils/ai.js";
+import { inngest } from "../client.js";
 
-export const onTicketCreated = Inngest.createFunction(
+export const onTicketCreated = inngest.createFunction(
   { id: "on-ticket-created", retries: 2 },
   { event: "ticket/created" },
   async ({ event, step }) => {

@@ -1,6 +1,6 @@
 import express from "express";
-import { login , signup, logout, updateUser, getUser } from "../controllers/user";
-import { authenticate } from "../middlewares/auth";
+import { login , signup, logout, updateUser, getUser } from "../controllers/user.js";
+import { authenticate } from "../middlewares/auth.js";
 const router = express.Router();
 
 router.post("/update-user",authenticate,updateUser);
