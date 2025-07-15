@@ -9,6 +9,8 @@ import Login from "./pages/login.jsx";
 import Signup from "./pages/signup.jsx";
 import Admin from "./pages/admin.jsx";
 import Navbar from './components/navbar.jsx';
+
+// Importing the necessary components and styles
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
