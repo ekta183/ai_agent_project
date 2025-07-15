@@ -4,63 +4,66 @@ import User from '../models/user.js';
 import { inngest } from '../inngest/client.js';
 import { sendEmail } from '../utils/mailer.js'; 
 
-export const signup = async (req,res)=>{
-    const {email, password, skills=[]} = req.body;
+export const signup = async (req, res) => {
+  const { email, password, skills = [] } = req.body;
 
-    try{
-        const hashed = bcrypt.hash(password,10);
-        const user=await User.create({email,password:hashed,skills})
+  try {
+    const hashed = await bcrypt.hash(password, 10); // ✅ await added
 
-        await inngest.send({
+    const user = await User.create({
+      email,
+      password: hashed,
+      skills,
+    });
 
-            name:"user/signup",
-            data:{
-                email
-            }
-        });
+    await inngest.send({
+      name: "user/signup",
+      data: { email },
+    });
 
-        const token = jwt.sign({_id:user._id,role:user.role},process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      process.env.JWT_SECRET
+    );
 
-        res.json({user,token})
+    res.json({ user, token });
+  } catch (error) {
+    res.status(500).json({
+      error: "Signup failed",
+      details: error.message,
+    });
+  }
+};
 
-        // remove user in the end (we dont want to send the password)
-    }catch(error){
-        res.status(500).json({
-            error:"Signup failed",
-            details: error.message
-        })
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email }); // ✅ await added
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
     }
-}
-export const login = async(req,res)=>{
-    const {email,password}=req.body;
-    
-    try {
-        const user = User.findOne({email});
-        if(!user){
-            return res.status(401).json({
-                error:"User not found"
-            })
-        } 
 
-        const isMatch = await bcrypt.compare(password,user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-        if(!isMatch){
-            return res.status(401).json({
-                error:"Invalid credentials"
-            })
-        }
-
-        const token = jwt.sign({_id:user._id,role:user.role},process.env.JWT_SECRET);
-        res.json({user,token});
-
-        //have to change later
-    } catch (error) {
-        res.status(500).json({
-            error:"Login failed",
-            details: error.message
-        });
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-}
+
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      process.env.JWT_SECRET
+    );
+
+    res.json({ user, token });
+  } catch (error) {
+    res.status(500).json({
+      error: "Login failed",
+      details: error.message,
+    });
+  }
+};
 
 export const logout = async (req,res)=>{
     try {

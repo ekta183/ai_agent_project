@@ -23,7 +23,7 @@ IMPORTANT:
 Repeat: Do not wrap your output in markdown or code fences.`,
   });
 
-  const response = supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
+  const response = await supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
         
 Analyze the following support ticket and provide a JSON object with:
 
@@ -47,8 +47,17 @@ Ticket information:
 
 - Title: ${ticket.title}
 - Description: ${ticket.description}`);
+    // console.log("AI Response:", response);
+    if (
+  !response?.output ||
+  !Array.isArray(response.output) ||
+  !response.output[0]?.content
+) {
+  throw new Error("Invalid AI response structure");
+}
 
-   const raw = response.output[0].context;
+const raw = response.output[0].content;
+
    
    try {
     const match = raw.match(/```json\s*([\s\S]*?)\s*```/i);

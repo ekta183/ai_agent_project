@@ -1,9 +1,9 @@
-import { Inngest, NonRetriableError } from "inngest";
-import  User  from "../../models/user.js";
-import { sendEmail } from "../../utils/mailer.js";
-import Ticket from "../../models/ticket.js";
-import analyseTicket from "../../utils/ai.js";
 import { inngest } from "../client.js";
+import Ticket from "../../models/ticket.js";
+import User from "../../models/user.js";
+import { NonRetriableError } from "inngest";
+import { sendEmail } from "../../utils/mailer.js";
+import analyzeTicket from "../../utils/ai.js";
 
 export const onTicketCreated = inngest.createFunction(
   { id: "on-ticket-created", retries: 2 },
@@ -11,9 +11,11 @@ export const onTicketCreated = inngest.createFunction(
   async ({ event, step }) => {
     try {
       const { ticketId } = event.data;
+
+      //fetch ticket from DB
       const ticket = await step.run("fetch-ticket", async () => {
         const ticketObject = await Ticket.findById(ticketId);
-        if (!ticket) {
+        if (!ticketObject) {
           throw new NonRetriableError("Ticket not found");
         }
         return ticketObject;
@@ -23,7 +25,7 @@ export const onTicketCreated = inngest.createFunction(
         await Ticket.findByIdAndUpdate(ticket._id, { status: "TODO" });
       });
 
-      const aiResponse = await analyseTicket(ticket);
+      const aiResponse = await analyzeTicket(ticket);
 
       const relatedskills = await step.run("ai-processing", async () => {
         let skills = [];
@@ -74,8 +76,8 @@ export const onTicketCreated = inngest.createFunction(
       });
 
       return { success: true };
-    } catch (error) {
-      console.error("❌ Error running the step", error.message);
+    } catch (err) {
+      console.error("❌ Error running the step", err.message);
       return { success: false };
     }
   }
