@@ -1,4 +1,4 @@
 ai_assistant_backend/.env
 ai_assistant_backend/node_modules
-ai-ticket-frontend/node_modules
-ai-ticket-frontend/.env
+ai_assistant_frontend/node_modules
+ai_assistant_frontend/.env
